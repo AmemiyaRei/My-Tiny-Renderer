@@ -1,0 +1,21 @@
+# ninja log v5
+0	105	7069714833379464	build.ninja	9b50fc964f6468b
+207	266	7069661787739269	TinyRenderer.exe	90c892358e38ba96
+1	207	7069661787179264	CMakeFiles/TinyRenderer.dir/main.cpp.obj	c1b75de68966158d
+1	333	7069471189995756	CMakeFiles/TinyRenderer.dir/tgaimage.cpp.obj	a01b473d4aede18b
+1	91	7069714833379464	build.ninja	9b50fc964f6468b
+4	341	7069714837134852	CMakeFiles/TinyRenderer.dir/main.cpp.obj	c1b75de68966158d
+2	461	7069714838334860	CMakeFiles/TinyRenderer.dir/model.cpp.obj	65c0bb02ee4f41c1
+461	651	7069714840203215	TinyRenderer.exe	546ec7c988d83092
+2	272	7069715154155734	CMakeFiles/TinyRenderer.dir/main.cpp.obj	c1b75de68966158d
+272	341	7069715154815718	TinyRenderer.exe	546ec7c988d83092
+2	305	7069756972989887	CMakeFiles/TinyRenderer.dir/main.cpp.obj	c1b75de68966158d
+311	401	7069756973929036	TinyRenderer.exe	546ec7c988d83092
+1	276	7069757128544343	CMakeFiles/TinyRenderer.dir/main.cpp.obj	c1b75de68966158d
+276	339	7069757129154350	TinyRenderer.exe	546ec7c988d83092
+2	278	7069758258743831	CMakeFiles/TinyRenderer.dir/main.cpp.obj	c1b75de68966158d
+278	348	7069758259423838	TinyRenderer.exe	546ec7c988d83092
+1	278	7069760823256818	CMakeFiles/TinyRenderer.dir/main.cpp.obj	c1b75de68966158d
+278	354	7069760823976828	TinyRenderer.exe	546ec7c988d83092
+1	281	7069762755573291	CMakeFiles/TinyRenderer.dir/main.cpp.obj	c1b75de68966158d
+281	355	7069762756293265	TinyRenderer.exe	546ec7c988d83092
