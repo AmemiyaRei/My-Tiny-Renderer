@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 #include "tgaimage.h"
 #include <vector>
 #include "geometry.h"
@@ -38,10 +39,33 @@ void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
     }
 }
 
+bool y_comp(const Vec2i &v1, const Vec2i &v2) {
+    return v1.y < v2.y;
+}
+
 void triangle(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage &image, TGAColor color) {
-    line(t0.x, t0.y, t1.x, t1.y, image, color);
-    line(t0.x, t0.y, t2.x, t2.y, image, color);
-    line(t2.x, t2.y, t1.x, t1.y, image, color);
+//    line(t0.x, t0.y, t1.x, t1.y, image, color);
+//    line(t0.x, t0.y, t2.x, t2.y, image, color);
+//    line(t2.x, t2.y, t1.x, t1.y, image, color);
+    std::vector<Vec2i> vertices{t0, t1, t2};
+    std::sort(vertices.begin(), vertices.end(), y_comp);
+    for (int y = vertices[0].y; y < vertices[2].y; ++y) {
+        float t1 = (float)(y - vertices[0].y) / (float)(vertices[2].y - vertices[0].y);
+        int x1 = vertices[2].x * t1 + vertices[0].x * (1 - t1);
+        float t2;
+        int x2;
+        if (y <= vertices[1].y) {
+            t2 = (float)(y - vertices[0].y) / (float)(vertices[1].y - vertices[0].y);
+            x2 = vertices[1].x * t2 + vertices[0].x * (1 - t2);
+        } else {
+            t2 = (float)(y - vertices[1].y) / (float)(vertices[2].y - vertices[1].y);
+            x2 = vertices[2].x * t2 + vertices[1].x * (1 - t2);
+        }
+        if (x1 > x2) std::swap(x1, x2);
+        for (int x = x1; x <= x2; ++x) {
+            image.set(x, y, color);
+        }
+    }
 }
 
 int main(int argc, char** argv) {
