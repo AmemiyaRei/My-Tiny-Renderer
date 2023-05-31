@@ -4,6 +4,7 @@
 #include <vector>
 #include "geometry.h"
 #include "model.h"
+#include <limits>
 
 const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red = TGAColor(255, 0, 0, 255);
@@ -39,30 +40,41 @@ void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
     }
 }
 
-Vec3f barycentric(std::vector<Vec2i> &pts, Vec2i P) {
+Vec3f barycentric(Vec3f* pts, Vec3f P) {
     Vec3f u = Vec3f(pts[1].x - pts[0].x, pts[2].x - pts[0].x, pts[0].x - P.x) ^
               Vec3f(pts[1].y - pts[0].y, pts[2].y - pts[0].y, pts[0].y - P.y);
     // use abs(u.z) < 1 to represent u.z == 0 to avoid minor error by float calculation
-    if (std::abs(u.z) < 1) return Vec3f(-1, 1, 1);
+    if (std::abs(u.z) < 1e-2) return Vec3f(-1, 1, 1);
     return Vec3f(1.0 - (u.x + u.y) / u.z, u.x / u.z, u.y / u.z);
 }
 
-void triangle(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage &image, TGAColor color) {
-    Vec2i clamp(image.get_width() - 1, image.get_height() - 1);
-    Vec2i bboxmin, bboxmax;
-    bboxmin.x = std::max(0, (std::min(t0.x, std::min(t1.x, t2.x))));
-    bboxmin.y = std::max(0, (std::min(t0.y, std::min(t1.y, t2.y))));
-    bboxmax.x = std::max(clamp.x, (std::max(t0.x, std::max(t1.x, t2.x))));
-    bboxmax.y = std::max(clamp.y, (std::max(t0.y, std::max(t1.y, t2.y))));
-    Vec2i P;
-    std::vector<Vec2i> pts{t0, t1, t2};
+void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color) {
+    Vec2f clamp(image.get_width() - 1, image.get_height() - 1);
+    Vec2f bboxmin(std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+    Vec2f bboxmax(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
+    for (int i = 0; i < 3; ++i) {
+        bboxmin.x = std::max(0.f, std::min(bboxmin.x, pts[i].x));
+        bboxmin.y = std::max(0.f, std::min(bboxmin.y, pts[i].y));
+        bboxmax.x = std::min(clamp.x, std::max(bboxmax.x, pts[i].x));
+        bboxmax.y = std::min(clamp.y, std::max(bboxmax.y, pts[i].y));
+    }
+    Vec3f P;
     for (P.x = bboxmin.x; P.x <= bboxmax.x; ++P.x) {
         for (P.y = bboxmin.y; P.y <= bboxmax.y; ++P.y) {
+            // barycentric coordinates in x-y plane
             Vec3f bc = barycentric(pts, P);
             if (bc.x < 0 || bc.y < 0 || bc.z < 0) continue;
-            image.set(P.x, P.y, color);
+            P.z = bc * Vec3f(pts[0].z, pts[1].z, pts[2].z);
+            if (P.z > zbuffer[int(P.x + P.y * width)]) {
+                zbuffer[int(P.x + P.y * width)] = P.z;
+                image.set(P.x, P.y, color);
+            }
         }
     }
+}
+
+Vec3f world2screen(Vec3f v) {
+    return Vec3f(int((v.x + 1.0) * width / 2.0 + 0.5), int((v.y + 1.0) * height / 2.0 + 0.5), v.z);
 }
 
 int main(int argc, char** argv) {
@@ -73,27 +85,25 @@ int main(int argc, char** argv) {
     }
 
     TGAImage image(width, height, TGAImage::RGB);
+    int zbuffer_size = width * height;
+    auto zbuffer = new float[zbuffer_size];
+    for (int i = 0; i < zbuffer_size; ++i) zbuffer[i] = -std::numeric_limits<float>::max();
+
     // light direction: -z
     Vec3f light_dir(0, 0, -1);
 
     for (int i = 0; i < model->nfaces(); ++i) {
         std::vector<int> face = model->face(i);
-        Vec3f world_coords[3];
-        Vec2i screen_coords[3];
+        Vec3f pts[3];
         for (int j = 0; j < 3; ++j) {
-            Vec3f v = model->vert(face[j]);
-            // scaled 2D projection coordinates in image
-            screen_coords[j] = Vec2i((v.x + 1.0) * width / 2.0,
-                                     (v.y + 1.0) * height / 2.0);
-            // origin 3D coordinates of the model
-            world_coords[j] = v;
+            pts[j] = world2screen(model->vert(face[j]));
         }
-        Vec3f n = (world_coords[2] - world_coords[1]) ^ (world_coords[1] - world_coords[0]);
+        Vec3f n = (model->vert(face[2]) - model->vert(face[1])) ^ (model->vert(face[1]) - model->vert(face[0]));
         n.normalize();
         // light intensity
         float intensity = n * light_dir;
         if (intensity > 0) {
-            triangle(screen_coords[0], screen_coords[1], screen_coords[2], image,
+            triangle(pts, zbuffer, image,
                      TGAColor(intensity * 255, intensity * 255, intensity * 255, 255));
         }
     }
