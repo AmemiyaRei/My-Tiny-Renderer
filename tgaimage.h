@@ -57,6 +57,12 @@ struct TGAColor {
 		}
 		return *this;
 	}
+
+    TGAColor operator*(float intensity) {
+        if (intensity < 0.f) intensity = 0.f;
+        else if (intensity > 1.f) intensity = 1.f;
+        return TGAColor(r * intensity, g * intensity, b * intensity, a);
+    }
 };
 
 
