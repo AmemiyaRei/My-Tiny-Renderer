@@ -12,6 +12,35 @@ const TGAColor green = TGAColor(0, 255, 0, 255);
 Model *model = NULL;
 const int width = 800;
 const int height = 800;
+const int depth = 255;
+Vec3f light_dir(0, 0, -1);
+Vec3f camera(0, 0, 3);
+
+Vec3f m2v(Matrix m) {
+    // convert 1 * 4 matrix to 3D vector
+    return Vec3f(m[0][0] / m[3][0], m[1][0] / m[3][0], m[2][0] / m[3][0]);
+}
+
+Matrix v2m(Vec3f v) {
+    Matrix m(4, 1);
+    m[0][0] = v.x;
+    m[1][0] = v.y;
+    m[2][0] = v.z;
+    m[3][0] = 1.f;
+    return m;
+}
+
+Matrix viewport(float x, float y, int w, int h) {
+    Matrix m = Matrix::identity(4);
+    m[0][3] = x + w / 2.f;
+    m[1][3] = y + h / 2.f;
+    m[2][3] = depth / 2.f;
+
+    m[0][0] = w / 2.f;
+    m[1][1] = h / 2.f;
+    m[2][2] = depth / 2.f;
+    return m;
+}
 
 void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
     bool steep = false;
@@ -50,6 +79,7 @@ Vec3f barycentric(Vec3f* pts, Vec3f P) {
 
 void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, Vec2f *tvs, TGAImage& texture,
               float intensity) {
+    if (pts[0].y == pts[1].y && pts[1].y == pts[2].y) return;
     Vec2f clamp(image.get_width() - 1, image.get_height() - 1);
     Vec2f bboxmin(std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
     Vec2f bboxmax(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
@@ -83,6 +113,13 @@ Vec3f world2screen(Vec3f v) {
     return Vec3f(int((v.x + 1.0) * width / 2.0 + 0.5), int((v.y + 1.0) * height / 2.0 + 0.5), v.z);
 }
 
+Vec3f & round(Vec3f &v) {
+    v.x = int(v.x + 0.5);
+    v.y = int(v.y + 0.5);
+    v.z = int(v.z + 0.5);
+    return v;
+}
+
 int main(int argc, char** argv) {
     if(argc == 2) {
         model = new Model(argv[1]);
@@ -95,35 +132,42 @@ int main(int argc, char** argv) {
     texture.read_tga_file(text_file_path);
     texture.flip_vertically();
 
-    TGAImage image(width, height, TGAImage::RGB);
     int zbuffer_size = width * height;
     auto zbuffer = new float[zbuffer_size];
-    for (int i = 0; i < zbuffer_size; ++i) zbuffer[i] = -std::numeric_limits<float>::max();
+    for (int i = 0; i < zbuffer_size; ++i) zbuffer[i] = std::numeric_limits<float>::min();
 
-    // light direction: -z
-    Vec3f light_dir(0, 0, -1);
+    {
+        // draw the model
+        Matrix Projection = Matrix::identity(4);
+        Matrix ViewPort = viewport(width / 8, height / 8, width * 3/ 4, height * 3 / 4);
+        Projection[3][2] = -1.f / camera.z;
 
-    for (int i = 0; i < model->nfaces(); ++i) {
-        std::vector<int> face = model->face(i);
-        std::vector<int> tface = model->tface(i);
-        Vec3f pts[3];
-        Vec2f tvs[3];
-        for (int j = 0; j < 3; ++j) {
-            pts[j] = world2screen(model->vert(face[j]));
-            tvs[j] = model->tvert(tface[j]);
+        TGAImage image(width, height, TGAImage::RGB);
+        for (int i = 0; i < model->nfaces(); ++i) {
+            std::vector<int> face = model->face(i);
+            std::vector<int> tface = model->tface(i);
+            Vec3f pts[3];
+            Vec2f tvs[3];
+            for (int j = 0; j < 3; ++j) {
+//                pts[j] = world2screen(model->vert(face[j]));
+                pts[j] = m2v(ViewPort * Projection * v2m(model->vert(face[j])));
+                pts[j] = round(pts[j]);
+                tvs[j] = model->tvert(tface[j]);
+            }
+            Vec3f n = (model->vert(face[2]) - model->vert(face[1])) ^ (model->vert(face[1]) - model->vert(face[0]));
+            n.normalize();
+            // light intensity
+            float intensity = n * light_dir;
+            if (intensity > 0) {
+                triangle(pts, zbuffer, image, tvs, texture, intensity);
+            }
         }
-        Vec3f n = (model->vert(face[2]) - model->vert(face[1])) ^ (model->vert(face[1]) - model->vert(face[0]));
-        n.normalize();
-        // light intensity
-        float intensity = n * light_dir;
-        if (intensity > 0) {
-            triangle(pts, zbuffer, image, tvs, texture, intensity);
-        }
+        image.flip_vertically();
+        image.write_tga_file("output.tga");
     }
 
 
-    image.flip_vertically();
-    image.write_tga_file("output.tga");
     delete model;
+    delete[] zbuffer;
     return 0;
 }
