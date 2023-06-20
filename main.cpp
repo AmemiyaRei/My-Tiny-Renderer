@@ -77,8 +77,7 @@ Vec3f barycentric(Vec3f* pts, Vec3f P) {
     return Vec3f(1.0 - (u.x + u.y) / u.z, u.x / u.z, u.y / u.z);
 }
 
-void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, Vec2f *tvs, TGAImage& texture,
-              float intensity) {
+void triangle(Vec3f *pts, Vec3f *npts, float *zbuffer, TGAImage &image, Vec2f *tvs, TGAImage& texture) {
     if (pts[0].y == pts[1].y && pts[1].y == pts[2].y) return;
     Vec2f clamp(image.get_width() - 1, image.get_height() - 1);
     Vec2f bboxmin(std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
@@ -96,12 +95,17 @@ void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, Vec2f *tvs, TGAImage&
             Vec3f bc = barycentric(pts, P);
             if (bc.x < 0 || bc.y < 0 || bc.z < 0) continue;
             P.z = bc * Vec3f(pts[0].z, pts[1].z, pts[2].z);
+            float intensities[3];
+            for (int i = 0; i < 3; ++i) {
+                intensities[i] = light_dir * npts[i].normalize() * -1.f;
+            }
             if (P.z > zbuffer[int(P.x + P.y * width)]) {
                 Vec2f texture_coordinate = tvs[0] * bc.x + tvs[1] * bc.y + tvs[2] * bc.z;
                 texture_coordinate.x *= texture.get_width();
                 texture_coordinate.y *= texture.get_height();
 //                std::cout << texture_coordinate;
                 TGAColor color = texture.get(int(texture_coordinate.x), int(texture_coordinate.y));
+                float intensity = intensities[0] * bc.x + intensities[1] * bc.y + intensities[2] * bc.z;
                 zbuffer[int(P.x + P.y * width)] = P.z;
                 image.set(P.x, P.y, color * intensity);
             }
@@ -139,27 +143,30 @@ int main(int argc, char** argv) {
     {
         // draw the model
         Matrix Projection = Matrix::identity(4);
-        Matrix ViewPort = viewport(width / 8, height / 8, width * 3/ 4, height * 3 / 4);
+        Matrix ViewPort = viewport(width / 8, height / 8, width * 3 / 4, height * 3 / 4);
         Projection[3][2] = -1.f / camera.z;
 
         TGAImage image(width, height, TGAImage::RGB);
         for (int i = 0; i < model->nfaces(); ++i) {
             std::vector<int> face = model->face(i);
             std::vector<int> tface = model->tface(i);
+            std::vector<int> nface = model->nface(i);
             Vec3f pts[3];
             Vec2f tvs[3];
+            Vec3f npts[3];
             for (int j = 0; j < 3; ++j) {
 //                pts[j] = world2screen(model->vert(face[j]));
                 pts[j] = m2v(ViewPort * Projection * v2m(model->vert(face[j])));
                 pts[j] = round(pts[j]);
                 tvs[j] = model->tvert(tface[j]);
+                npts[j] = model->normal_vert(nface[j]);
             }
             Vec3f n = (model->vert(face[2]) - model->vert(face[1])) ^ (model->vert(face[1]) - model->vert(face[0]));
             n.normalize();
-            // light intensity
+            // face light intensity
             float intensity = n * light_dir;
             if (intensity > 0) {
-                triangle(pts, zbuffer, image, tvs, texture, intensity);
+                triangle(pts, npts, zbuffer, image, tvs, texture);
             }
         }
         image.flip_vertically();
