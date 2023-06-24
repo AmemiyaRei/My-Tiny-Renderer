@@ -6,15 +6,15 @@
 #include "model.h"
 #include <limits>
 
-const TGAColor white = TGAColor(255, 255, 255, 255);
-const TGAColor red = TGAColor(255, 0, 0, 255);
-const TGAColor green = TGAColor(0, 255, 0, 255);
 Model *model = NULL;
 const int width = 800;
 const int height = 800;
 const int depth = 255;
-Vec3f light_dir(0, 0, -1);
-Vec3f camera(0, 0, 3);
+
+Vec3f light_dir = Vec3f(0, 0, -1).normalize();
+Vec3f Eye(1, 1, 3);
+Vec3f Up(0, 1, 0);
+Vec3f Center(0, 0, 0);
 
 Vec3f m2v(Matrix m) {
     // convert 1 * 4 matrix to 3D vector
@@ -42,31 +42,18 @@ Matrix viewport(float x, float y, int w, int h) {
     return m;
 }
 
-void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
-    bool steep = false;
-    if (std::abs(x0 - x1) < abs(y0 - y1)) {
-        steep = true;
-        std::swap(x0, y0);
-        std::swap(x1, y1);
+Matrix lookat(Vec3f eye, Vec3f center, Vec3f up) {
+    Vec3f z = (eye - center).normalize();
+    Vec3f x = (up ^ z).normalize();
+    Vec3f y = (z ^ x).normalize();
+    Matrix res = Matrix::identity(4);
+    for (int i = 0; i < 3; ++i) {
+        res[0][i] = x[i];
+        res[1][i] = y[i];
+        res[2][i] = z[i];
+        res[i][3] = -center[i];
     }
-    if (x0 > x1) {
-        std::swap(x0, x1);
-        std::swap(y0, y1);
-    }
-    int dx = x1 - x0;
-    int dy = y1 - y0;
-    int derror2 = std::abs(dy) * 2;
-    int error2 = 0;
-    int y = y0;
-    for (int x = x0; x <= x1; ++x) {
-        if (steep) image.set(y, x, color);
-        else image.set(x, y, color);
-        error2 += derror2;
-        if (error2 > dx) {
-            y += (y1 > y0 ? 1 : -1);
-            error2 -= dx * 2;
-        }
-    }
+    return res;
 }
 
 Vec3f barycentric(Vec3f* pts, Vec3f P) {
@@ -113,9 +100,6 @@ void triangle(Vec3f *pts, Vec3f *npts, float *zbuffer, TGAImage &image, Vec2f *t
     }
 }
 
-Vec3f world2screen(Vec3f v) {
-    return Vec3f(int((v.x + 1.0) * width / 2.0 + 0.5), int((v.y + 1.0) * height / 2.0 + 0.5), v.z);
-}
 
 Vec3f & round(Vec3f &v) {
     v.x = int(v.x + 0.5);
@@ -143,11 +127,14 @@ int main(int argc, char** argv) {
     {
         // draw the model
         Matrix Projection = Matrix::identity(4);
-        Matrix ViewPort = viewport(width / 8, height / 8, width * 3 / 4, height * 3 / 4);
-        Projection[3][2] = -1.f / camera.z;
+        Matrix ModelView = lookat(Eye, Center, Up);
+        Projection[3][2] = -1.f / (Eye - Center).norm();
+        Matrix ViewPort = viewport(0, 0, width, height);
+        Matrix Tr = ViewPort * Projection * ModelView;
 
         TGAImage image(width, height, TGAImage::RGB);
         for (int i = 0; i < model->nfaces(); ++i) {
+            // for each face
             std::vector<int> face = model->face(i);
             std::vector<int> tface = model->tface(i);
             std::vector<int> nface = model->nface(i);
@@ -156,7 +143,7 @@ int main(int argc, char** argv) {
             Vec3f npts[3];
             for (int j = 0; j < 3; ++j) {
 //                pts[j] = world2screen(model->vert(face[j]));
-                pts[j] = m2v(ViewPort * Projection * v2m(model->vert(face[j])));
+                pts[j] = m2v(Tr * v2m(model->vert(face[j])));
                 pts[j] = round(pts[j]);
                 tvs[j] = model->tvert(tface[j]);
                 npts[j] = model->normal_vert(nface[j]);
