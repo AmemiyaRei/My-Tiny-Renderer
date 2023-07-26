@@ -11,7 +11,7 @@ const int width = 800;
 const int height = 800;
 const int depth = 255;
 
-Vec3f light_dir = Vec3f(0, 0, -1).normalize();
+Vec3f light_dir = Vec3f(-1, -1, -4).normalize();
 Vec3f Eye(1, 1, 3);
 Vec3f Up(0, 1, 0);
 Vec3f Center(0, 0, 0);
