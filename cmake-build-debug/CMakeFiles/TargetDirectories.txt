@@ -1,3 +1,0 @@
-E:/cpp_projects/TinyRenderer/cmake-build-debug/CMakeFiles/TinyRenderer.dir
-E:/cpp_projects/TinyRenderer/cmake-build-debug/CMakeFiles/edit_cache.dir
-E:/cpp_projects/TinyRenderer/cmake-build-debug/CMakeFiles/rebuild_cache.dir
