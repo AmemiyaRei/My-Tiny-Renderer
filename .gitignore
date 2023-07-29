@@ -1,6 +1,6 @@
 .idea
 .tiny*
-/cmake-build-debug/
+/cmake-build-debug
 /images
 
 
