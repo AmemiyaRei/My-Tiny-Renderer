@@ -73,6 +73,12 @@ build CMakeFiles/TinyRenderer.dir/geometry.cpp.obj: CXX_COMPILER__TinyRenderer_D
   OBJECT_DIR = CMakeFiles\TinyRenderer.dir
   OBJECT_FILE_DIR = CMakeFiles\TinyRenderer.dir
 
+build CMakeFiles/TinyRenderer.dir/our_gl.cpp.obj: CXX_COMPILER__TinyRenderer_Debug E$:/cpp_projects/TinyRenderer/our_gl.cpp || cmake_object_order_depends_target_TinyRenderer
+  DEP_FILE = CMakeFiles\TinyRenderer.dir\our_gl.cpp.obj.d
+  FLAGS = -g -fdiagnostics-color=always
+  OBJECT_DIR = CMakeFiles\TinyRenderer.dir
+  OBJECT_FILE_DIR = CMakeFiles\TinyRenderer.dir
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target TinyRenderer
@@ -81,7 +87,7 @@ build CMakeFiles/TinyRenderer.dir/geometry.cpp.obj: CXX_COMPILER__TinyRenderer_D
 #############################################
 # Link the executable TinyRenderer.exe
 
-build TinyRenderer.exe: CXX_EXECUTABLE_LINKER__TinyRenderer_Debug CMakeFiles/TinyRenderer.dir/main.cpp.obj CMakeFiles/TinyRenderer.dir/tgaimage.cpp.obj CMakeFiles/TinyRenderer.dir/model.cpp.obj CMakeFiles/TinyRenderer.dir/geometry.cpp.obj
+build TinyRenderer.exe: CXX_EXECUTABLE_LINKER__TinyRenderer_Debug CMakeFiles/TinyRenderer.dir/main.cpp.obj CMakeFiles/TinyRenderer.dir/tgaimage.cpp.obj CMakeFiles/TinyRenderer.dir/model.cpp.obj CMakeFiles/TinyRenderer.dir/geometry.cpp.obj CMakeFiles/TinyRenderer.dir/our_gl.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\TinyRenderer.dir

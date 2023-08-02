@@ -80,7 +80,7 @@ template<size_t DIM, typename T>vec<DIM, T> operator-(vec<DIM, T> lhs, const vec
 }
 
 // 向量标量乘
-template<size_t DIM, typename T, typename U>vec<DIM, T> operator*(vec<DIM, T> lhs, const U& rhs) {
+template<size_t DIM, typename T, typename U> vec<DIM, T> operator*(vec<DIM, T> lhs, const U& rhs) {
     for (size_t i = 0; i < DIM; ++i) {
         lhs[i] *= rhs;
     }
@@ -88,14 +88,14 @@ template<size_t DIM, typename T, typename U>vec<DIM, T> operator*(vec<DIM, T> lh
 }
 
 // 向量标量除
-template<size_t DIM, typename T, typename U>vec<DIM, T> operator/(vec<DIM, T> lhs, const U& rhs) {
+template<size_t DIM, typename T, typename U> vec<DIM, T> operator/(vec<DIM, T> lhs, const U& rhs) {
     for (size_t i = 0; i < DIM; ++i) {
         lhs[i] /= rhs;
     }
     return lhs;
 }
 
-// 向量嵌入
+// 向量嵌入，低阶向量嵌入到高阶向量中，末尾补1
 template<size_t LEN, size_t DIM, typename T> vec<LEN, T> embed(const vec<DIM, T> &v, T fill=1) {
     vec<LEN, T> ret;
     for (size_t i = 0; i < LEN; ++i) {

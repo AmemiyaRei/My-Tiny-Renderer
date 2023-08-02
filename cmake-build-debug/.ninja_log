@@ -1,7 +1,13 @@
 # ninja log v5
-1	91	7120821379882371	build.ninja	9b50fc964f6468b
+1	91	7125949073985685	build.ninja	9b50fc964f6468b
 18	769	7081691908313880	CMakeFiles/TinyRenderer.dir/geometry.cpp.obj	9487b784a3438689
 564	646	7093006826811683	TinyRenderer.exe	f803799504555a1c
 2	564	7093006826024321	CMakeFiles/TinyRenderer.dir/main.cpp.obj	c1b75de68966158d
 2	515	7076747835495734	CMakeFiles/TinyRenderer.dir/tgaimage.cpp.obj	a01b473d4aede18b
 6	513	7082837194485875	CMakeFiles/TinyRenderer.dir/model.cpp.obj	65c0bb02ee4f41c1
+8	488	7125997316245618	CMakeFiles/TinyRenderer.dir/geometry.cpp.obj	9487b784a3438689
+6	490	7125997316275607	CMakeFiles/TinyRenderer.dir/tgaimage.cpp.obj	a01b473d4aede18b
+11	491	7125997316285623	CMakeFiles/TinyRenderer.dir/our_gl.cpp.obj	ea21c9ab03e4d239
+1	493	7125997316305618	CMakeFiles/TinyRenderer.dir/main.cpp.obj	c1b75de68966158d
+4	601	7125997317381388	CMakeFiles/TinyRenderer.dir/model.cpp.obj	65c0bb02ee4f41c1
+601	849	7125997319841378	TinyRenderer.exe	7d7e4665d9856c7d
