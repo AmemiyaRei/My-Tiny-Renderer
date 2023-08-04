@@ -34,7 +34,10 @@ template <typename T> struct vec<2, T> {
     vec(T X, T Y) : x(X), y(Y) {}
     // 拷贝构造函数
     template<class U> vec<2, T> (const vec<2, U> &v);
-          T& operator[](const size_t i)       { assert(i < 2); return i <= 0 ? x : y; }
+          T& operator[](const size_t i)       {
+              assert(i < 2);
+              return i <= 0 ? x : y;
+          }
     const T& operator[](const size_t i) const { assert(i < 2); return i <= 0 ? x : y; }
     // 模板特化修改数据成员定义
     T x, y;

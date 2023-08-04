@@ -34,9 +34,8 @@ struct GouraudShader : public IShader {
 };
 
 
-
 int main(int argc, char** argv) {
-    if(argc == 2) {
+    if (argc == 2) {
         model = new Model(argv[1]);
     } else {
         model = new Model("../obj/african_head.obj");
@@ -66,6 +65,4 @@ int main(int argc, char** argv) {
 
     delete model;
     return 0;
-
-
 }

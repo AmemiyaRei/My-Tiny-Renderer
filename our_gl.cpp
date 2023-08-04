@@ -42,7 +42,7 @@ void lookat(Vec3f eye, Vec3f center, Vec3f up) {
 
 Vec3f barycentric(Vec2f A, Vec2f B, Vec2f C, Vec2f P) {
     Vec3f s[2];
-    for (int i = 2; i > 0; i--) {
+    for (int i = 0; i < 2; i++) {
         s[i][0] = C[i] - A[i];
         s[i][1] = B[i] - A[i];
         s[i][2] = A[i] - P[i];
