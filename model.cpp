@@ -90,6 +90,7 @@ Vec3f Model::normal(Vec2f uvf) {
     Vec2i uv(uvf[0] * normalmap_.get_width(), uvf[1] * normalmap_.get_height());
     TGAColor c = normalmap_.get(uv[0], uv[1]);
     Vec3f res;
+    // RGB映射到向量空间(-1, 1)
     for (int i = 0; i < 3; i++) {
         res[2 - i] = (float)c[i] / 255.f * 2.f - 1.f;
     }

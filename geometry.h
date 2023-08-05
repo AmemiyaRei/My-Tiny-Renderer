@@ -197,8 +197,8 @@ public:
     // 获取矩阵的子阵，原矩阵去掉row行和col列
     mat<DimRows - 1, DimCols - 1, T> get_minor(size_t row, size_t col) const {
         mat<DimRows - 1, DimCols - 1, T> ret;
-        for (size_t i = 0; i < DimRows; ++i) {
-            for (size_t j = 0; j < DimCols; ++j) {
+        for (size_t i = 0; i < DimRows - 1; ++i) {
+            for (size_t j = 0; j < DimCols - 1; ++j) {
                 ret[i][j] = rows[i < row? i : i + 1][j < col ? j : j + 1];
             }
         }

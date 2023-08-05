@@ -40,8 +40,10 @@ struct GouraudShader : public IShader {
 };
 
 struct Shader : public IShader {
-    Vec3f            varying_intensity;
+    // 法线贴图处理，法向量变换与模型变换矩阵互为逆转矩阵
     mat<2, 3, float> varying_uv;
+    mat<4, 4, float> uniform_M;   // Projection * ModelView
+    mat<4, 4, float> uniform_MIT; // (Projection * ModelView).invert_transpose()
 
     virtual Vec4f vertex(int iface, int nthvert) {
         // 2行3列矩阵，每一列为一个贴图坐标
@@ -49,14 +51,14 @@ struct Shader : public IShader {
         varying_uv.set_col(nthvert, model->uv(iface, nthvert));
         Vec4f gl_Vertex = embed<4>(model->vert(iface, nthvert));
         gl_Vertex = Viewport * Projection * ModelView * gl_Vertex;
-        varying_intensity[nthvert] = std::max(0.f, model->normal(iface, nthvert) * light_dir);
         return gl_Vertex;
     }
 
     virtual bool fragment(Vec3f bar, TGAColor &color) {
-        float intensity = varying_intensity * bar;
-        // 插值计算
         Vec2f uv = varying_uv * bar;
+        Vec3f n = proj<3>(uniform_MIT * embed<4>(model->normal(uv))).normalize();
+        Vec3f l = proj<3>(uniform_M * embed<4>(light_dir)).normalize();
+        float intensity = std::max(0.f, n * l);
         color = model->diffuse(uv) * intensity;
         return false;
     }
@@ -80,6 +82,8 @@ int main(int argc, char** argv) {
 
 //    GouraudShader shader;
     Shader shader;
+    shader.uniform_M = Projection * ModelView;
+    shader.uniform_MIT = (Projection * ModelView).invert_transpose();
     for (int i = 0; i < model->nfaces(); i++) {
         Vec4f screen_coords[3];
         for (int j = 0; j < 3; j++) {
