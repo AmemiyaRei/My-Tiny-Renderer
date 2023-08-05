@@ -28,7 +28,36 @@ struct GouraudShader : public IShader {
 
     virtual bool fragment(Vec3f bar, TGAColor &color) {
         float intensity = varying_intensity * bar;
-        color = TGAColor(255, 255, 255) * intensity;
+        if (intensity > 0.85) intensity = 1.0;
+        else if (intensity > 0.60) intensity = 0.80;
+        else if (intensity > 0.45) intensity = 0.60;
+        else if (intensity > 0.30) intensity = 0.45;
+        else if (intensity > 0.15) intensity = 0.30;
+        else intensity = 0.0;
+        color = TGAColor(255, 155, 0) * intensity;
+        return false;
+    }
+};
+
+struct Shader : public IShader {
+    Vec3f            varying_intensity;
+    mat<2, 3, float> varying_uv;
+
+    virtual Vec4f vertex(int iface, int nthvert) {
+        // 2行3列矩阵，每一列为一个贴图坐标
+        // 设置顶点贴图坐标
+        varying_uv.set_col(nthvert, model->uv(iface, nthvert));
+        Vec4f gl_Vertex = embed<4>(model->vert(iface, nthvert));
+        gl_Vertex = Viewport * Projection * ModelView * gl_Vertex;
+        varying_intensity[nthvert] = std::max(0.f, model->normal(iface, nthvert) * light_dir);
+        return gl_Vertex;
+    }
+
+    virtual bool fragment(Vec3f bar, TGAColor &color) {
+        float intensity = varying_intensity * bar;
+        // 插值计算
+        Vec2f uv = varying_uv * bar;
+        color = model->diffuse(uv) * intensity;
         return false;
     }
 };
@@ -49,7 +78,8 @@ int main(int argc, char** argv) {
     TGAImage image(width, height, TGAImage::RGB);
     TGAImage zbuffer(width, height, TGAImage::GRAYSCALE);
 
-    GouraudShader shader;
+//    GouraudShader shader;
+    Shader shader;
     for (int i = 0; i < model->nfaces(); i++) {
         Vec4f screen_coords[3];
         for (int j = 0; j < 3; j++) {
