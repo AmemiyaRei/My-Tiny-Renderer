@@ -42,30 +42,24 @@ struct GouraudShader : public IShader {
 struct Shader : public IShader {
     // 法线贴图处理，法向量变换与模型变换矩阵互为逆转矩阵
     mat<2, 3, float> varying_uv;
-    mat<4, 4, float> uniform_M;   // Projection * ModelView
-    mat<4, 4, float> uniform_MIT; // (Projection * ModelView).invert_transpose()
+    mat<3, 3, float> varying_nrm;
 
     virtual Vec4f vertex(int iface, int nthvert) {
         // 2行3列矩阵，每一列为一个贴图坐标
         // 设置顶点贴图坐标
         varying_uv.set_col(nthvert, model->uv(iface, nthvert));
+        varying_nrm.set_col(nthvert, proj<3>((Projection * ModelView).invert_transpose() * embed<4>(model->normal(iface, nthvert), 0.f)));
         Vec4f gl_Vertex = embed<4>(model->vert(iface, nthvert));
         gl_Vertex = Viewport * Projection * ModelView * gl_Vertex;
         return gl_Vertex;
     }
 
     virtual bool fragment(Vec3f bar, TGAColor &color) {
+        Vec3f bn = (varying_nrm * bar).normalize();
         Vec2f uv = varying_uv * bar;
-        Vec3f n = proj<3>(uniform_MIT * embed<4>(model->normal(uv))).normalize(); // 法向量
-        Vec3f l = proj<3>(uniform_M * embed<4>(light_dir)).normalize(); // 光照向量
-        Vec3f r = (n * (n * l * 2.f) - l).normalize(); // 反射向量
-        float spec = pow(std::max(r.z, 0.f), model->specular(uv));
-        float diff = std::max(0.f, n * l);
-        color = model->diffuse(uv);
-        for (int i = 0; i < 3; i++) {
-            // a test config of phong lighting
-            color[i] = std::min<float>(5.f + color[i] * (diff + 0.6f * spec), 255.f);
-        }
+
+        float diff = std::max(0.f, bn * light_dir);
+        color = model->diffuse(uv) * diff;
         return false;
     }
 };
@@ -88,8 +82,6 @@ int main(int argc, char** argv) {
 
 //    GouraudShader shader;
     Shader shader;
-    shader.uniform_M = Projection * ModelView;
-    shader.uniform_MIT = (Projection * ModelView).invert_transpose();
     for (int i = 0; i < model->nfaces(); i++) {
         Vec4f screen_coords[3];
         for (int j = 0; j < 3; j++) {
