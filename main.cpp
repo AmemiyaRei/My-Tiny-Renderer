@@ -51,9 +51,9 @@ struct Shader : public IShader {
         // 设置顶点贴图坐标
         varying_uv.set_col(nthvert, model->uv(iface, nthvert));
         varying_nrm.set_col(nthvert, proj<3>((Projection * ModelView).invert_transpose() * embed<4>(model->normal(iface, nthvert), 0.f)));
-        Vec4f gl_Vertex = embed<4>(model->vert(iface, nthvert));
+        Vec4f gl_Vertex = Viewport * Projection * ModelView * embed<4>(model->vert(iface, nthvert));
+        // 变换后的顶点坐标
         ndc_tri.set_col(nthvert, proj<3>(gl_Vertex / gl_Vertex[3]));
-        gl_Vertex = Viewport * Projection * ModelView * gl_Vertex;
         return gl_Vertex;
     }
 
