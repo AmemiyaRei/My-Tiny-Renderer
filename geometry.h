@@ -228,6 +228,16 @@ public:
         T tmp = ret[0] * rows[0];
         return ret / tmp;
     }
+
+    // 逆矩阵
+    mat<DimCols, DimRows, T> invert() {
+        mat<DimRows, DimCols, T> MIT = invert_transpose();
+        mat<DimCols, DimRows, T> ret;
+        for (int i = 0; i < DimRows; i++) {
+            ret.set_col(i,MIT[i]);
+        }
+        return ret;
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
