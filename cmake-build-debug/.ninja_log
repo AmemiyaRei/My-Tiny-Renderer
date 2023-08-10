@@ -83,3 +83,10 @@
 369	474	7132556954831047	TinyRenderer.exe	7d7e4665d9856c7d
 38	1255	7132835748204071	CMakeFiles/TinyRenderer.dir/main.cpp.obj	c1b75de68966158d
 1255	1556	7132835751184048	TinyRenderer.exe	7d7e4665d9856c7d
+4	442	7132903049464946	CMakeFiles/TinyRenderer.dir/our_gl.cpp.obj	ea21c9ab03e4d239
+2	345	7132903292791836	CMakeFiles/TinyRenderer.dir/main.cpp.obj	c1b75de68966158d
+345	647	7132903295782105	TinyRenderer.exe	7d7e4665d9856c7d
+1	605	7133405827542475	CMakeFiles/TinyRenderer.dir/model.cpp.obj	65c0bb02ee4f41c1
+605	850	7133405829962464	TinyRenderer.exe	7d7e4665d9856c7d
+1	795	7133733882889913	CMakeFiles/TinyRenderer.dir/main.cpp.obj	c1b75de68966158d
+795	1005	7133733884946372	TinyRenderer.exe	7d7e4665d9856c7d
