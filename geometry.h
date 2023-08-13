@@ -39,6 +39,7 @@ template <typename T> struct vec<2, T> {
               return i <= 0 ? x : y;
           }
     const T& operator[](const size_t i) const { assert(i < 2); return i <= 0 ? x : y; }
+    float norm() { return std::sqrt(x * x + y * y); }
     // 模板特化修改数据成员定义
     T x, y;
 };
@@ -236,6 +237,12 @@ public:
         for (int i = 0; i < DimRows; i++) {
             ret.set_col(i,MIT[i]);
         }
+        return ret;
+    }
+
+    mat<DimCols,DimRows,T> transpose() {
+        mat<DimCols,DimRows,T> ret;
+        for (size_t i=DimCols; i--; ret[i]=this->col(i));
         return ret;
     }
 };
